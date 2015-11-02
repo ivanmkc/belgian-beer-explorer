@@ -56,7 +56,8 @@ lr.on('line', function (line) {
 			    	item.location = location;
 			    	item.numberOfInquiries = numberOfInquiries;
 			    	item.buyerName = buyerName;
-			    	item.buyerLink = buyerLink;
+			    	item.buyerLink = urlPrefix + buyerLink;
+			    	item.link = urlPrefix + relativeURL;
 
 			    	console.log("	>Item details: " + JSON.stringify(item));
 					  //   var link = $(this);
