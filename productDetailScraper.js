@@ -94,7 +94,7 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 				}
 
 				fs.appendFileSync(outFile, lineToWrite);
-				
+				resume();
 
 				// lr.resume();
 	    });
