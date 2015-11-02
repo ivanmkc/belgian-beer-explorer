@@ -13,45 +13,59 @@ function getNextPage(urlFormat, pageNumber, itemsSoFar) {
     return new Promise(function (resolve, reject) {
     	console.log("Accessing page: " + pageNumber)
     	request({uri: url}, 
-			function(error, response, body) {			  	    	
-		    	console.log("	>Received page: " + pageNumber);
+			function(err, response, body) {			  	    	
+				if (err)
+				{
+					reject(err);
+				}
+				else if (response.statusCode !== 200)
+				{
+					err = new Error("Unexpected status code: " + response.statusCode);
+	                err.res = response;
+	                return reject(err);
+				}
+				else
+				{
+			    	console.log("	>Received page: " + pageNumber);
 
-		    	//Parse with cheerio
-		    	var $ = cheerio.load(body);
-		    	var itemsInPage = [];
-		    	//Find items and save to array
-		    	$(".product_img > a").each(function() {
-				    var link = $(this);
-				    // var text = link.text();
-				    var href = link.attr("href");
+			    	//Parse with cheerio
+			    	var $ = cheerio.load(body);
+			    	var itemsInPage = [];
+			    	//Find items and save to array
+			    	$(".product_img > a").each(function() {
+					    var link = $(this);
+					    // var text = link.text();
+					    var href = link.attr("href");
 
-				    // console.log(link + " -> " + href);
+					    // console.log(link + " -> " + href);
 
-				    itemsInPage.push(href);
-				  });	    	
+					    itemsInPage.push(href);
+					  });	    	
 
-		    	//Check apology message
+			    	//Check apology message
 
-		    	//See if there are more pages
-		    	var stillHasPages = !$("p").hasClass("search_apologymsg");
+			    	//See if there are more pages
+			    	var stillHasPages = !$("p").hasClass("search_apologymsg");
 
-		    	//Add to total pages
-		    	itemsSoFar = itemsSoFar.concat(itemsInPage);
+			    	//Add to total pages
+			    	itemsSoFar = itemsSoFar.concat(itemsInPage);
 
-		        if (stillHasPages) {
-		            resolve(getNextPage(urlFormat, pageNumber+1, itemsSoFar));
-		        }
-		        else
-		        {
-		        	resolve(itemsSoFar);
-		        }
+			        if (stillHasPages) {
+			            resolve(getNextPage(urlFormat, pageNumber+1, itemsSoFar));
+			        }
+			        else
+			        {
+			        	resolve(itemsSoFar);
+			        }
+			    }
 	    });
     });
 }
 
-var urlFormat = "http://www.buyma.com/r/_CANADA-GOOSE-%E3%82%AB%E3%83%8A%E3%83%80%E3%82%B0%E3%83%BC%E3%82%B9/-C1001_<page>/";
+// var urlFormat = "http://www.buyma.com/r/_CANADA-GOOSE-%E3%82%AB%E3%83%8A%E3%83%80%E3%82%B0%E3%83%BC%E3%82%B9/-C1001_<page>/";
+var urlFormat = "http://www.buyma.com/r/_KATE-SPADE-%E3%82%B1%E3%82%A4%E3%83%88%E3%82%B9%E3%83%9A%E3%83%BC%E3%83%89_<page>/";
 var startingPage = 1;
-var outFile = "CanadaGooseItems.txt";
+var outFile = "LululemonItems.txt";
 
 //Get first page of website
 getNextPage(urlFormat, startingPage, []).then(
