@@ -3,22 +3,22 @@
 var request = require("request");
 var cheerio = require("cheerio")
 var fs = require("fs");
-var LineByLineReader = require('line-by-line');
+// var LineByLineReader = require('line-by-line');
+var lineReader = require('line-reader');
+
 
 //Parse data and send to Parse server
 var itemCounter = 0;
 var urlPrefix = "http://www.buyma.com";
-var itemsFile = "CanadaItems.txt";
+var itemsFile = "VictoriasSecretItems.txt";
 var outFile = itemsFile.replace(/\.txt/, "Details.txt");    
 
-var lr = new LineByLineReader(itemsFile);
+// var lr = new LineByLineReader(itemsFile);
 // var allItems = [];
 var alreadyProcessedLines = [];
-
 fs.writeFileSync(outFile, "[");
-lr.on('line', function (line) { 	
- 	lr.pause();    
-
+lineReader.eachLine(itemsFile, function(line, last, cb) {
+  
   	var relativeURL = line;
 
   	//Make sure we don't process the same url twice
@@ -82,17 +82,26 @@ lr.on('line', function (line) {
 				
 				// allItems.push(item);
 				//Write to file directly to save memory
-				fs.appendFileSync(outFile, JSON.stringify(item) + ", ");
+				var lineToWrite =  JSON.stringify(item);
 
-				lr.resume();
+				if (!last)
+				{
+					lineToWrite = lineToWrite  + ", ";
+				}
+				else
+				{
+					lineToWrite = lineToWrite + "]";
+				}
+
+				fs.appendFileSync(outFile, lineToWrite);
+				cb();
+
+				// lr.resume();
 	    });
 	}
-	else
-	{
-		lr.resume();
-	}
 });
 
-lr.on('end', function () {
-    fs.appendFileSync(outFile, "]");
-});
+
+// lr.on('end', function () {
+//     fs.appendFileSync(outFile, "]");
+// });
