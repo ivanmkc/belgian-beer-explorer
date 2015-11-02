@@ -81,6 +81,10 @@ lr.on('line', function (line) {
 				lr.resume();
 	    });
 	}
+	else
+	{
+		lr.resume();
+	}
 });
 
 lr.on('end', function () {
