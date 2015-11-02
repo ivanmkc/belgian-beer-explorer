@@ -10,14 +10,14 @@ var lineReader = require('line-reader');
 //Parse data and send to Parse server
 var itemCounter = 0;
 var urlPrefix = "http://www.buyma.com";
-var itemsFile = "VictoriasSecretItems.txt";
+var itemsFile = "KateSpadeItems.txt";
 var outFile = itemsFile.replace(/\.txt/, "Details.txt");    
 
 // var lr = new LineByLineReader(itemsFile);
 // var allItems = [];
 var alreadyProcessedLines = [];
 fs.writeFileSync(outFile, "[");
-lineReader.eachLine(itemsFile, function(line, last, cb) {
+lineReader.eachLine(itemsFile, function(line, last, resume) {
   
   	var relativeURL = line;
 
@@ -94,7 +94,8 @@ lineReader.eachLine(itemsFile, function(line, last, cb) {
 				}
 
 				fs.appendFileSync(outFile, lineToWrite);
-				cb();
+
+				resume();
 
 				// lr.resume();
 	    });
