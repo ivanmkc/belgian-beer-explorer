@@ -9,10 +9,13 @@ var LineByLineReader = require('line-by-line');
 var itemCounter = 0;
 var urlPrefix = "http://www.buyma.com";
 var itemsFile = "CanadaItems.txt";
+var outFile = itemsFile.replace(/\.txt/, "Details.txt");    
 
 var lr = new LineByLineReader(itemsFile);
-var allItems = [];
+// var allItems = [];
 var alreadyProcessedLines = [];
+
+fs.writeFileSync(outFile, "[");
 lr.on('line', function (line) { 	
  	lr.pause();    
 
@@ -77,7 +80,10 @@ lr.on('line', function (line) {
 				  //   itemsInPage.push(href);
 				  // });	    	
 				
-				allItems.push(item);
+				// allItems.push(item);
+				//Write to file directly to save memory
+				fs.appendFileSync(outFile, JSON.stringify(item) + ", ");
+
 				lr.resume();
 	    });
 	}
@@ -88,6 +94,5 @@ lr.on('line', function (line) {
 });
 
 lr.on('end', function () {
-	var outFile = itemsFile.replace(/\.txt/, "Details.txt");
-    fs.writeFileSync(outFile, JSON.stringify(allItems));
+    fs.appendFileSync(outFile, "]");
 });
