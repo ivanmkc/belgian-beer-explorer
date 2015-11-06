@@ -5,7 +5,7 @@ var request = require("request");
 var cheerio = require("cheerio")
 var fs = require("fs");
 var lineReader = require('line-reader');
-// var wd = require('wd');
+var trans = require('translate-google-free');
 
 program
   .version('0.0.1')
@@ -13,9 +13,6 @@ program
   .parse(process.argv);
 
 //Selenium
-// var browser = wd.promiseChainRemote();
-// var browserStarted = browser.init({browserName:'firefox'});
-
 var webdriver = require('selenium-webdriver'),
     By = require('selenium-webdriver').By,
     until = require('selenium-webdriver').until;
@@ -58,28 +55,46 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 			    	var price = $("span.amount").text();
 			    	var name = $("div.OneLinkNoTx").text();
 			    	var description = $("#productImage").text();
+			    	description = description.replace(/(\n)+/g, ".");
+			    	description = description.replace(/(\t)+/g, " ");
 
-			    	var item = new Object();
-			    	item.price = price;
-			    	item.name = name;
-			    	item.description = description;
+			    	//Translate
+			    	trans(name + ":::" + description, 'en', 'ja', 
+			    		function(err, translation) {
+			    			if (err == null)
+			    			{
+						  		console.log("Translation complete!");
 
-			    	console.log("	>Item details: " + JSON.stringify(item));
+						  		var item = new Object();
+						    	item.price = price;
+						    	item.name = name;
+						    	item.description = description;
+						    	var translations = translation.split(":::");
+						    	item.nameJP = translations[0];
+						    	item.descriptionJP = translations[1];
 
-					//Write to file directly to save memory
-					var lineToWrite =  JSON.stringify(item);
+						    	console.log("	>Item details: " + JSON.stringify(item));
 
-					if (!last)
-					{
-						lineToWrite = lineToWrite  + ", ";
-					}
-					else
-					{
-						lineToWrite = lineToWrite + "]";
-					}
+								//Write to file directly to save memory
+								var lineToWrite =  JSON.stringify(item);
 
-					fs.appendFileSync(outFile, lineToWrite);
-					resume();
+								if (!last)
+								{
+									lineToWrite = lineToWrite  + ", ";
+								}
+								else
+								{
+									lineToWrite = lineToWrite + "]";
+								}
+
+								fs.appendFileSync(outFile, lineToWrite);
+							}
+							else
+							{
+								console.log("Error translating: " + err);
+							}
+							resume();
+					});			    	
 			    };
 		});	  	
 	}

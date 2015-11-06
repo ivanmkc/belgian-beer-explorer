@@ -11,11 +11,13 @@
   "dependencies": {
     "cheerio": "^0.19.0",
     "commander": "^2.9.0",
+    "edit-google-spreadsheet": "^0.2.20",
     "google-translate": "^1.0.2",
     "json2csv": "^3.0.1",
     "jsonlint": "^1.6.2",
     "line-reader": "^0.3.0",
     "request": "^2.65.0",
-    "selenium-webdriver": "^2.48.2"
+    "selenium-webdriver": "^2.48.2",
+    "translate-google-free": "^0.2.0"
   }
 }
