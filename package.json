@@ -1,0 +1,13 @@
+{
+  "name": "buyma",
+  "version": "1.0.0",
+  "description": "Buyma",
+  "main": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ivan Cheung",
+  "license": "ISC",
+  "dependencies": {
+  }
+}

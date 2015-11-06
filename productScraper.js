@@ -1,8 +1,14 @@
 #!/usr/local/bin/node
-
+var program = require('commander');
 var request = require("request");
 var cheerio = require("cheerio")
 var fs = require("fs");
+
+program
+  .version('0.0.1')
+  .option('-f, --format [format]', 'Specifiy the format', '')
+  .option('-o, --out [file]', 'Specify the file to save to', 'items.txt')
+  .parse(process.argv);
 
 function getNextPage(urlFormat, pageNumber, itemsSoFar) {
     // maxRedirects = maxRedirects || 0;
@@ -11,7 +17,7 @@ function getNextPage(urlFormat, pageNumber, itemsSoFar) {
     // }
     var url = urlFormat.replace(/<page>/gi, pageNumber.toString());
     return new Promise(function (resolve, reject) {
-    	console.log("Accessing page: " + pageNumber)
+    	console.log("Accessing page: " + pageNumber + " at " + url)
     	request({uri: url}, 
 			function(err, response, body) {			  	    	
 				if (err)
@@ -66,9 +72,9 @@ function getNextPage(urlFormat, pageNumber, itemsSoFar) {
 // var urlFormat = "http://www.buyma.com/r/_KATE-SPADE-%E3%82%B1%E3%82%A4%E3%83%88%E3%82%B9%E3%83%9A%E3%83%BC%E3%83%89_<page>/";
 // var urlFormat = "http://www.buyma.com/r/-A2001003000_<page>/";
 // var urlFormat = "http://www.buyma.com/r/_LULULEMON-%E3%83%AB%E3%83%AB%E3%83%AC%E3%83%A2%E3%83%B3_<page>/";
-var urlFormat = "http://www.buyma.com/r/_VICTORIAS-SECRET-%E3%83%B4%E3%82%A3%E3%82%AF%E3%83%88%E3%83%AA%E3%82%A2%E3%82%B7%E3%83%BC%E3%82%AF%E3%83%AC%E3%83%83%E3%83%88_<page>/"
+var urlFormat = program.format;//"http://www.buyma.com/r/_VICTORIAS-SECRET-%E3%83%B4%E3%82%A3%E3%82%AF%E3%83%88%E3%83%AA%E3%82%A2%E3%82%B7%E3%83%BC%E3%82%AF%E3%83%AC%E3%83%83%E3%83%88_<page>/"
 var startingPage = 1;
-var outFile = "VictoriasSecretItems.txt";
+var outFile = program.out;
 
 //Get first page of website
 getNextPage(urlFormat, startingPage, []).then(

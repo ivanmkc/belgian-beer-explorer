@@ -1,20 +1,24 @@
 #!/usr/local/bin/node
 
+var program = require('commander');
 var request = require("request");
 var cheerio = require("cheerio")
 var fs = require("fs");
 // var LineByLineReader = require('line-by-line');
 var lineReader = require('line-reader');
 
+program
+  .version('0.0.1')
+  .option('-i, --in [file]', 'Specify the file to input', 'items.txt')
+  .parse(process.argv);
 
 //Parse data and send to Parse server
 var itemCounter = 0;
 var urlPrefix = "http://www.buyma.com";
-var itemsFile = "KateSpadeItems.txt";
+// var itemsFile = "CanadaItems2.txt";
+var itemsFile = program.in;
 var outFile = itemsFile.replace(/\.txt/, "Details.txt");    
 
-// var lr = new LineByLineReader(itemsFile);
-// var allItems = [];
 var alreadyProcessedLines = [];
 fs.writeFileSync(outFile, "[");
 lineReader.eachLine(itemsFile, function(line, last, resume) {
@@ -35,7 +39,7 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 
 		    	//Parse with cheerio
 		    	var $ = cheerio.load(body);
-		    	var itemsInPage = [];
+
 		    	//Find items and save to array
 		    	var price = $("span.price_txt").text();
 		    	var priceOriginal = $("span.percent_refer").text();
@@ -69,18 +73,10 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 		    	item.buyerName = buyerName;
 		    	item.buyerLink = urlPrefix + buyerLink;
 		    	item.link = urlPrefix + relativeURL;
+		    	item.pageRanking = itemCounter;
 
 		    	console.log("	>Item details: " + JSON.stringify(item));
-				  //   var link = $(this);
-				  //   // var text = link.text();
-				  //   var href = link.attr("href");
 
-				  //   // console.log(link + " -> " + href);
-
-				  //   itemsInPage.push(href);
-				  // });	    	
-				
-				// allItems.push(item);
 				//Write to file directly to save memory
 				var lineToWrite =  JSON.stringify(item);
 
@@ -95,8 +91,6 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 
 				fs.appendFileSync(outFile, lineToWrite);
 				resume();
-
-				// lr.resume();
 	    });
 	}
 	else
@@ -104,8 +98,3 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 		resume();
 	}
 });
-
-
-// lr.on('end', function () {
-//     fs.appendFileSync(outFile, "]");
-// });

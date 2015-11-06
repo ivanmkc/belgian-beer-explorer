@@ -3,9 +3,16 @@
 var json2csv = require('json2csv');
 var fs = require('fs');
 var jsonlint = require("jsonlint");
+var program = require('commander');
+
+program
+  .version('0.0.1')
+  .option('-i, --in [file]', 'Specify the file to input', 'itemsDetails.txt')
+  .parse(process.argv);
+
 // var fields = ['field1', 'field2', 'field3'];
  
-var itemDetailsFile = "CanadaGooseItemsDetails.txt";
+var itemDetailsFile = program.in;//"CanadaItemsDetails.txt";
 var outFile = itemDetailsFile.replace(/\.txt/, ".csv");    
 
 var myData = fs.readFileSync(itemDetailsFile);
