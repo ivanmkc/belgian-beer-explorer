@@ -10,6 +10,11 @@ program
   .option('-o, --out [file]', 'Specify the file to save to', 'items.txt')
   .parse(process.argv);
 
+  
+if (!process.argv.slice(2).length) {
+    program.outputHelp();
+  }
+
 function getNextPage(urlFormat, pageNumber, itemsSoFar) {
     // maxRedirects = maxRedirects || 0;
     // if (maxRedirects > 10) {
