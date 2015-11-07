@@ -170,7 +170,11 @@ worksheetName: kWorksheetName,
 
 								spreadsheet.add(rowItem);
 								spreadsheet.send(function(err) {
-							      if(err) throw err;
+							      if(err)
+							      {
+							      	console.log("Error with row: " + JSON.stringify(rowItem))
+							      	throw err;
+							      }
 							      	console.log("	>Updated spreadsheet!")
 							      resume();
 							    });						
