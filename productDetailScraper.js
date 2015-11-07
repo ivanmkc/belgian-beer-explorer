@@ -178,7 +178,7 @@ worksheetName: kWorksheetName,
 							      	{
 							      		console.log("	>Updated spreadsheet!")
 								      	resume();
-							      	}
+							      	});
 							      	// throw err;
 							      }
 							      else
