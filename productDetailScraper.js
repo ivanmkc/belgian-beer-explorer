@@ -114,16 +114,39 @@ worksheetName: kWorksheetName,
 								lineToWrite = lineToWrite + "]";
 							}
 
+							//Write to file
 							fs.appendFileSync(outFile, lineToWrite);
 
-							//Send to spreadsheet
-							var row = info.lastRow + itemCounter;
-							itemCounter++;
+							//Convert item to spreadsheet format
 							var rowItem = new Object();
-							rowItem[row] = {1: item.name,
-											2: item.price,
-											3: item.brand,
-											4: item.link};
+							var keys = Object.getOwnPropertyNames(item);
+							var itemAsRow = new Object();
+							for (var keyIndex = 1; keyIndex <= keys.length; keyIndex++)
+							{
+								itemAsRow[keyIndex] = item[keys[keyIndex]];
+							}
+
+							//If is the first row, write header
+							if (info.lastRow == 1)
+							{
+								var headerItem = new Object();
+								var headersAsRow = new Object();
+								for (var keyIndex = 1; keyIndex <= keys.length; keyIndex++)
+								{
+									headersAsRow[keyIndex] = keys[keyIndex];
+								}
+								headerItem[1] = headersAsRow;
+								spreadsheet.add(headerItem);
+							}
+
+							//Increment item counter
+							itemCounter++;
+
+							//Set the row
+							var row = info.lastRow + itemCounter;
+							rowItem[row] = itemAsRow;
+							// console.log("Current row: " + JSON.stringify(rowItem));
+
 							spreadsheet.add(rowItem);
 							spreadsheet.send(function(err) {
 						      if(err) throw err;
