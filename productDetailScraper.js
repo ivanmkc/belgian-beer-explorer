@@ -13,6 +13,7 @@ program
 	.option('-i, --in [file]', 'Specify the file to input', 'items.txt')
 	.option('-s, --sheet [sheetId]', 'Specify the sheet id', '')
 	.option('-w, --worksheet [wordsheetName]', 'Specify the worksheet name', 'Sheet1')
+	.option('-x, --index [startIndex]', 'Specify the starting index', 0)
 	.parse(process.argv);
 
 if (!process.argv.slice(2).length) {
@@ -24,6 +25,7 @@ kSpreadSheetId = program.sheet;
 kWorksheetName = program.worksheet;
 kServiceAccountEmail = '486557618341-7f7p526uvfdr9r950tolunf01pvpu66s@developer.gserviceaccount.com';
 kKeyFile = 'buyma.pem';
+kStartIndex = program.index;
 
 Spreadsheet.load({
 debug: true,
@@ -45,6 +47,12 @@ worksheetName: kWorksheetName,
 
 			//Parse data and send to Parse server
 			var itemCounter = 0;
+
+			if (itemCounter<kStartIndex)
+			{
+				resume();
+			}
+
 			var urlPrefix = "http://www.buyma.com";
 			// var itemsFile = "CanadaItems2.txt";
 			var itemsFile = program.in;
