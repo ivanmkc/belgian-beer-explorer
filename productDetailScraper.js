@@ -173,10 +173,19 @@ worksheetName: kWorksheetName,
 							      if(err)
 							      {
 							      	console.log("Error with row: " + JSON.stringify(rowItem))
-							      	throw err;
+							      	//Try one more time
+							      	spreadsheet.send(function(err) 
+							      	{
+							      		console.log("	>Updated spreadsheet!")
+								      	resume();
+							      	}
+							      	// throw err;
 							      }
+							      else
+							      {
 							      	console.log("	>Updated spreadsheet!")
-							      resume();
+							      	resume();
+							      }
 							    });						
 					    });
 					}
