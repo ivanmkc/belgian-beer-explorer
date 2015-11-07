@@ -8,9 +8,20 @@ var fs = require("fs");
 var lineReader = require('line-reader');
 var Spreadsheet = require('edit-google-spreadsheet');
  
+program
+	.version('0.0.1')
+	.option('-i, --in [file]', 'Specify the file to input', 'items.txt')
+	.option('-s, --sheet [sheetId]', 'Specify the sheet id', '')
+	.option('-w, --worksheet [wordsheetName]', 'Specify the worksheet name', 'Sheet1')
+	.parse(process.argv);
+
+if (!process.argv.slice(2).length) {
+    program.outputHelp();
+  }
+
 //Settings
-kSpreadSheetId = '1yKGFddSma3ABYudt6aWDs3zi8tLpRpR-WQysuyKpjnk';
-kWorksheetName = 'Sheet1';
+kSpreadSheetId = program.sheet;
+kWorksheetName = program.worksheet;
 kServiceAccountEmail = '486557618341-7f7p526uvfdr9r950tolunf01pvpu66s@developer.gserviceaccount.com';
 kKeyFile = 'buyma.pem';
 
@@ -26,11 +37,6 @@ worksheetName: kWorksheetName,
 		if (err) {
 	        throw err;
 	    }
-
-		program
-		  .version('0.0.1')
-		  .option('-i, --in [file]', 'Specify the file to input', 'items.txt')
-		  .parse(process.argv);
 
 	    spreadsheet.receive(function(err, rows, info) {
 	        if (err) {
