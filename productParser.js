@@ -22,11 +22,14 @@ parseLululemon = function(body)
 			//DESCRIPTION
 			//Find items and save to array
 			var price = $("span.amount").text();
-			//TODO Clean price
+			//Clean price
 			var priceCleanerRegex = /\$(\s*[0-9,]+(?:\s*\.\s*\d{2}))?/g;
 			var regexMatches = priceCleanerRegex.exec(price);
-			price = regexMatches[1];
-			console.log("	>Price: " + price);
+			if ((regexMatches != null)&&(regexMatches.length>=1))
+			{
+				price = regexMatches[1];
+			}
+
 			var name = $("div.OneLinkNoTx").text();
 
 			//WHY WE MADE THIS
@@ -65,28 +68,55 @@ parseLululemon = function(body)
 			product.fabricAndFeatures = fabricAndFeatures;
 			product.fitAndFunction = fitAndFunction;
 
-			//TRANSLATION
-			var fabricAndFeaturesPromises = product.fabricAndFeatures.map(
-				function(feature)
-				{
-					return new Promise(
-						function(featureResolve, featureReject)
-						{
-							//Translate
-					    	trans(feature, 'en', 'ja', 
-					    		function(err, translation) {
-					    			if (err == null)
-					    			{
-								  		// console.log("Translation complete!");
-								  		featureResolve(translation);
-								  	}
-								});
-					    }
-					);
-				});
+			//TRANSLATION: Description
+			//Translate
+	    	var descriptionPromise = new Promise(
+	    		function(descriptionResolve, descriptionReject)
+	    		{
+	    			trans(product.whyWeMadeThis, 'en', 'ja', 
+	    				function(err, translation)
+	    				{
+	    					if (err == null)
+	    					{
+	    						descriptionResolve(translation);
+	    					}
+	    					else
+	    					{
+	    						descriptionReject(err);
+	    					}
+	    				}
+    				)
+	    		});
 
-			//After all translations are completed
-			Promise.all(fabricAndFeaturesPromises).then(
+	    	descriptionPromise.then(
+				function(descriptionTranslated)
+				{
+					product.whyWeMadeThisJP = descriptionTranslated;
+
+					//TRANSLATION
+					var fabricAndFeaturesPromises = product.fabricAndFeatures.map(
+						function(feature)
+						{
+							return new Promise(
+								function(featureResolve, featureReject)
+								{
+									//Translate
+							    	trans(feature, 'en', 'ja', 
+							    		function(err, translation) {
+							    			if (err == null)
+							    			{
+										  		// console.log("Translation complete!");
+										  		featureResolve(translation);
+										  	}
+										});
+							    }
+							);
+						});
+
+					//After all translations are completed
+					return Promise.all(fabricAndFeaturesPromises)
+				}
+			).then(
 				function(featuresTranslated)
 				{
 					//Assign to product
@@ -240,7 +270,13 @@ parseLululemon = function(body)
 					}, function(reason) {
 					  console.log(reason)
 					});			
-				});		
+				},
+				function (error)
+				{
+					// console.log(error)
+					reject(error);
+				}
+			);		
 	});
 
 	return promise;
