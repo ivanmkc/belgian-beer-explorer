@@ -1,5 +1,4 @@
 {
-<<<<<<< HEAD
   "name": "buyma",
   "version": "1.0.0",
   "description": "Buyma",
@@ -10,6 +9,7 @@
   "author": "Ivan Cheung",
   "license": "ISC",
   "dependencies": {
+    "accounting": "^0.4.1",
     "cheerio": "^0.19.0",
     "commander": "^2.9.0",
     "edit-google-spreadsheet": "^0.2.20",
@@ -17,33 +17,9 @@
     "json2csv": "^3.0.1",
     "jsonlint": "^1.6.2",
     "line-reader": "^0.3.0",
+    "parse": "^1.6.9",
     "request": "^2.65.0",
     "selenium-webdriver": "^2.48.2",
     "translate-google-free": "^0.2.0"
-=======
-  "name": "Belgopedia",
-  "version": "0.0.0",
-  "description": "Belgopedia",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ccoenraets/belgopedia"
-  },
-  "author": "Christophe Coenraets",
-  "bugs": {
-    "url": "https://github.com/ccoenraets/loyalty/issues"
-  },
-  "homepage": "https://github.com/ccoenraets/loyalty",
-  "dependencies": {
-    "compression": "^1.2.2",
-    "express": "^4.10.6",
-    "path": "^0.4.9",
-    "pg": "^4.1.1",
-    "q": "^1.1.2"
->>>>>>> c98497e2326d17eaa6fac9325a4a6b2b0ba5d364
   }
 }

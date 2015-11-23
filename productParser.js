@@ -5,6 +5,7 @@ var cheerio = require("cheerio");
 var htmlToText = require('html-to-text');
 var unirest = require('unirest');
 var trans = require('translate-google-free');
+var accounting = require('accounting');
 
 var kMashapeKey_development = "FBpajofTTTmshaKXOOXLhh8oqTSAp1b9yBPjsn6N0nOTXKiTM9";
 var kMashapeKey_production = "FBpajofTTTmshaKXOOXLhh8oqTSAp1b9yBPjsn6N0nOTXKiTM9";
@@ -62,7 +63,7 @@ parseLululemon = function(body)
 
 			// var fitAndFunction = $(".why-we-made-this").next().next().html();
 			//Assign to product
-			product.price = price;
+			product.price = accounting.unformat(price);
 			product.name = name;
 			product.whyWeMadeThis = whyWeMadeThis;
 			product.fabricAndFeatures = fabricAndFeatures;
@@ -265,6 +266,51 @@ parseLululemon = function(body)
 
 					Promise.all(swatchPromises).then(function(value) { 
 						product.swatches = swatches;
+
+						//Combine into description
+						var description = 'WHY WE MADE THIS:\n';
+						description = description + product.whyWeMadeThis + '\n';
+
+						description = description + '\nFABRIC AND FEATURES:' + '\n';
+
+						description = description + product.fabricAndFeatures.map(
+							function(fabricAndFeature)
+							{
+								return '• ' + fabricAndFeature + '\n';
+							}).join("");
+
+						description = description + '\nFIT AND FUNCTION:' + '\n';
+
+						description = description + product.fitAndFunction.map(
+							function(fit)
+							{
+								return '• ' + fit + '\n';
+							}).join("");
+
+						product.description = description;
+
+						//Combine into description
+						var descriptionJP = 'WHY WE MADE THIS:\n';
+						descriptionJP = descriptionJP + product.whyWeMadeThisJP + '\n';
+
+						descriptionJP = descriptionJP + '\nFABRIC AND FEATURES:' + '\n';
+
+						descriptionJP = descriptionJP + product.fabricAndFeaturesJP.map(
+							function(fabricAndFeature)
+							{
+								return '• ' + fabricAndFeature + '\n';
+							}).join("");
+
+						descriptionJP = descriptionJP + '\nFIT AND FUNCTION:' + '\n';
+
+						descriptionJP = descriptionJP + product.fitAndFunctionJP.map(
+							function(fit)
+							{
+								return '• ' + fit + '\n';
+							}).join("");
+
+						product.descriptionJP = descriptionJP;						
+
 						//Return product
 						resolve(product);			  
 					}, function(reason) {
