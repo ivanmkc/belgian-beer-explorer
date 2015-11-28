@@ -155,18 +155,26 @@ parseLululemon = function(body)
 					//Swatches
 					var swatches = [];
 					// console.log("	>Finding swatches!");
-
+					var productId = "";
 					$("ul#swatches").find(".pickColor").each(function(i, elem) {
 					 	var color = $(this).attr("title");
 					 	var url = $(this).children("img").attr("src");
+
+					 	//Get the product id
+					 	productId = $(this).attr("rel");
+					 	var swatchId = $(this).attr("rev");
+
 					 	var swatch = new Object();
-					  	swatch.description = color;
+					  	swatch.descriptionOriginal = color;
 					  	swatch.imageUrl = url;
+					  	swatch.swatchId = swatchId;
 
 					  	swatches.push(swatch);
 
 					  	// console.log("	>Color: '" + color + "' at " + url);
 					});
+					product.productId = productId;
+
 					// console.log("	>Found " + swatches.length + " swatches!");
 
 					//Sizes
@@ -212,14 +220,14 @@ parseLululemon = function(body)
 								{
 									//See if the description is a basic color			
 									var swatchImageUrl = swatch.imageUrl;
-									if (Object.keys(colorTagToBuymaColorMap).indexOf(swatch.description) != -1)
+									if (Object.keys(colorTagToBuymaColorMap).indexOf(swatch.descriptionOriginal) != -1)
 									{
-										var buymaColor = colorTagToBuymaColorMap[swatch.description];
+										var buymaColor = colorTagToBuymaColorMap[swatch.descriptionOriginal];
 
 										//Add to the swatch
-										swatch.taggedColor = swatch.description;
+										swatch.descriptionTagged = swatch.descriptionOriginal;
 										swatch.sizes = sizes;
-										swatch.buymaColor = buymaColor;
+										swatch.descriptionBuyma = buymaColor;
 										swatchResolve(swatch);
 									}
 									else
@@ -253,9 +261,9 @@ parseLululemon = function(body)
 												var combinedColor = combinedColorArray.join('+');
 
 												//Add to the swatch
-												swatch.taggedColor = combinedColor;
+												swatch.descriptionTagged = combinedColor;
 												swatch.sizes = sizes;
-												swatch.buymaColor = combinedColorArray.length > 1 ? "multi" : combinedColor;
+												swatch.descriptionBuyma = combinedColorArray.length > 1 ? "multi" : combinedColor;
 
 												swatchResolve(swatch);
 											}
@@ -263,56 +271,126 @@ parseLululemon = function(body)
 									}
 								});
 						});
-
-					Promise.all(swatchPromises).then(function(value) { 
-						product.swatches = swatches;
-
-						//Combine into description
-						var description = 'WHY WE MADE THIS:\n';
-						description = description + product.whyWeMadeThis + '\n';
-
-						description = description + '\nFABRIC AND FEATURES:' + '\n';
-
-						description = description + product.fabricAndFeatures.map(
-							function(fabricAndFeature)
+						
+						Promise.all(swatchPromises).then(function() { 
+							//Get image for each swatch
+							var imagePromises = swatches.map(
+							function(swatch)
 							{
-								return '• ' + fabricAndFeature + '\n';
-							}).join("");
+								return new Promise(
+									function(swatchResolve, swatchReject)
+									{
+										unirest.post("http://shop.lululemon.com/shop/gadgets/productImageChanger.jsp")
+											.query(
+													{
+														isMainImage : true,
+														prodId : product.productId,
+														cc : swatch.swatchId,
+														isPDPSoldOut : false
+													}
+												)
+											.end(function (result) {
+												// console.log(result.status, result.headers, result.body);
+												if (result.status == 200)
+												{					 			  
+													console.log("Got images for swatch!");
 
-						description = description + '\nFIT AND FUNCTION:' + '\n';
+													var images = [];
+													var swatch$ = cheerio.load(result.body);
+													swatch$("img").each(
+														function(i, elem)
+														{
+															var imageLink = $(this).attr("src");
+															// console.log("imageLink: " + imageLink);
+															images.push(imageLink);
+														});
+													swatch.images = images;												
 
-						description = description + product.fitAndFunction.map(
-							function(fit)
-							{
-								return '• ' + fit + '\n';
-							}).join("");
+													//Get thumbnails
+													unirest.post("http://shop.lululemon.com/shop/gadgets/productImageChanger.jsp")
+													.query(
+															{
+																isMainImage : false,
+																prodId : product.productId,
+																cc : swatch.swatchId,
+																isPDPSoldOut : false
+															}
+														)
+													.end(function (result) {
+														// console.log(result.status, result.headers, result.body);
+														if (result.status == 200)
+														{					 			  
+															console.log("Got images for swatch!");
 
-						product.description = description;
+															var images = [];
+															var swatch$ = cheerio.load(result.body);
+															swatch$("img").each(
+																function(i, elem)
+																{
+																	var imageLink = $(this).attr("src");
+																	// console.log("imageLink: " + imageLink);
+																	images.push(imageLink);
+																});
+															swatch.thumbnailImages = images;												
+														}
+														swatchResolve(swatch);
+													});
+												}
+											})
+										// }
+									});
+							});							
+							
+							return Promise.all(imagePromises);
+						}).then(function() { 
+							product.swatches = swatches;
 
-						//Combine into description
-						var descriptionJP = 'WHY WE MADE THIS:\n';
-						descriptionJP = descriptionJP + product.whyWeMadeThisJP + '\n';
+							//Combine into description
+							var description = 'WHY WE MADE THIS:\n';
+							description = description + product.whyWeMadeThis + '\n';
 
-						descriptionJP = descriptionJP + '\nFABRIC AND FEATURES:' + '\n';
+							description = description + '\nFABRIC AND FEATURES:' + '\n';
 
-						descriptionJP = descriptionJP + product.fabricAndFeaturesJP.map(
-							function(fabricAndFeature)
-							{
-								return '• ' + fabricAndFeature + '\n';
-							}).join("");
+							description = description + product.fabricAndFeatures.map(
+								function(fabricAndFeature)
+								{
+									return '• ' + fabricAndFeature + '\n';
+								}).join("");
 
-						descriptionJP = descriptionJP + '\nFIT AND FUNCTION:' + '\n';
+							description = description + '\nFIT AND FUNCTION:' + '\n';
 
-						descriptionJP = descriptionJP + product.fitAndFunctionJP.map(
-							function(fit)
-							{
-								return '• ' + fit + '\n';
-							}).join("");
+							description = description + product.fitAndFunction.map(
+								function(fit)
+								{
+									return '• ' + fit + '\n';
+								}).join("");
 
-						product.descriptionJP = descriptionJP;						
+							product.description = description;
 
-						//Return product
-						resolve(product);			  
+							//Combine into description
+							var descriptionJP = 'WHY WE MADE THIS:\n';
+							descriptionJP = descriptionJP + product.whyWeMadeThisJP + '\n';
+
+							descriptionJP = descriptionJP + '\nFABRIC AND FEATURES:' + '\n';
+
+							descriptionJP = descriptionJP + product.fabricAndFeaturesJP.map(
+								function(fabricAndFeature)
+								{
+									return '• ' + fabricAndFeature + '\n';
+								}).join("");
+
+							descriptionJP = descriptionJP + '\nFIT AND FUNCTION:' + '\n';
+
+							descriptionJP = descriptionJP + product.fitAndFunctionJP.map(
+								function(fit)
+								{
+									return '• ' + fit + '\n';
+								}).join("");
+
+							product.descriptionJP = descriptionJP;						
+
+							//Return product
+							resolve(product);			  
 					}, function(reason) {
 					  console.log(reason)
 					});			

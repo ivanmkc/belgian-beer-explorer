@@ -54,6 +54,7 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 		    		productParser.parseLululemon(body).then(
 						function(result)
 						{
+							result.link = url;
 							products.push(result);
 							console.log("Result: " + JSON.stringify(result, null, 2));
 
@@ -63,18 +64,47 @@ lineReader.eachLine(itemsFile, function(line, last, resume) {
 								fs.writeFileSync(outFile, JSON.stringify(products, null, 2));
 
 							    itemCounterProcessed = 0;
+
+							    console.log("Saving products to server...");
 							    products.forEach(
 							    	function(product)
 							    	{				        		
 							    		//Save to Parse
 							    		var Product = Parse.Object.extend("Product");
-										//Create a new product
-										productOnParse = new Product();
-										productOnParse.set("name", product.name);
-										productOnParse.set("price", product.price);
-										productOnParse.set("description", product.description);
-										productOnParse.set("descriptionJP", product.descriptionJP);
-										productOnParse.save();
+
+										//Find an existing product
+										var query = new Parse.Query(Product);
+										query.equalTo("productId", product.productId);
+										console.log("	>Looking for an existing product");
+										query.first().then(function(productOnParse)
+										{
+											var isNewProduct = productOnParse == null;
+											if (isNewProduct)
+											{
+												//Create a new product
+												console.log("	>Creating a new product");
+												productOnParse = new Product();
+											}
+											else
+											{
+												// console.log("	>Updating an existing product: " + productOnParse.id);
+												console.log("	>Skipping an existing product: " + productOnParse.id);
+											}
+											
+											//Skip existing products as it will overwrite user-submitted information
+											if (isNewProduct)
+											{
+												productOnParse.set("name", product.name);
+												productOnParse.set("price", product.price);
+												productOnParse.set("description", product.description);
+												productOnParse.set("descriptionJP", product.descriptionJP);
+												productOnParse.set("swatches", product.swatches);
+												productOnParse.set("link", product.link);
+												productOnParse.set("productId", product.productId);
+												productOnParse.set("brand", product.brand);
+												productOnParse.save();
+											}
+										});										
 
 									    itemCounterProcessed++;	
 									});									
