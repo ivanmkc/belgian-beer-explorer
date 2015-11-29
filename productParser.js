@@ -20,6 +20,9 @@ parseLululemon = function(body)
 			var product = new Object();
 			var $ = cheerio.load(body);
 
+			//Set the brand
+			product.brand = "lululemon";
+			
 			//DESCRIPTION
 			//Find items and save to array
 			var price = $("span.amount").text();
@@ -293,7 +296,7 @@ parseLululemon = function(body)
 												// console.log(result.status, result.headers, result.body);
 												if (result.status == 200)
 												{					 			  
-													console.log("Got images for swatch!");
+													// console.log("Got images for swatch!");
 
 													var images = [];
 													var swatch$ = cheerio.load(result.body);
@@ -320,7 +323,7 @@ parseLululemon = function(body)
 														// console.log(result.status, result.headers, result.body);
 														if (result.status == 200)
 														{					 			  
-															console.log("Got images for swatch!");
+															// console.log("Got images for swatch!");
 
 															var images = [];
 															var swatch$ = cheerio.load(result.body);
