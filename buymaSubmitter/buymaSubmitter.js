@@ -23,7 +23,6 @@ var driver = new webdriver.Builder()
     .build();	
 
 //Product
-var kSwatchId = 0;
 var kTempFilename = 'temp.png';
 var objectId = "ZfX011hDbA";
 
@@ -37,129 +36,136 @@ query.first().then(function(productFromParse)
 	{
 		console.log("	>Found the product");
 		var product = productFromParse.toJSON();
-		var swatch = product.swatches[kSwatchId];
-		// var product = {};
-		// product.category = [2102, 3022];
-		// product.brand = "lululemon";
-		// product.name = "Nice Pants";
-		// product.descriptionJP = "Blue nice pants with stripes";
-		// product.swatches = [{"descriptionBuyma":"multi","descriptionOriginal":"diamond jacquard space dye slate clarity yellow","descriptionTagged":"gray+brown","imageUrl":"https://images.lululemon.com/is/image/lululemon/18683?$swatch_lg$","images":["https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_1?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_2?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_3?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_4?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_5?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_6?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_7?$pdp_main$"],"sizes":["2","4","6","8","10","12"],"swatchId":"18683","thumbnailImages":["https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_1?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_2?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_3?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_4?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_5?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_6?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6D44S_018683_7?$pdp_thumb$"]},{"descriptionBuyma":"gray","descriptionOriginal":"heathered slate","descriptionTagged":"gray","imageUrl":"https://images.lululemon.com/is/image/lululemon/9445?$swatch_lg$","images":["https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_1?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_2?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_3?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_4?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_5?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_6?$pdp_main$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_7?$pdp_main$"],"sizes":["2","4","6","8","10","12"],"swatchId":"9445","thumbnailImages":["https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_1?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_2?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_3?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_4?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_5?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_6?$pdp_thumb$","https://images.lululemon.com/is/image/lululemon/LW6E85S_9445_7?$pdp_thumb$"]}];
 
-		//Get the page
-		driver.get(url);
-		driver.findElement(By.id('txtLoginId')).sendKeys(kEmail);
-		driver.findElement(By.id('txtLoginPass')).sendKeys(kPassword);
-		driver.findElement(By.id('login_do')).click();
+		for (var swatchId = 0; swatchId < product.swatches.length; swatchId++)
+		{
+			var swatch = product.swatches[swatchId];
 
-		//Product edit page
+			//Get the page
+			driver.get(url);
+			driver.findElement(By.id('txtLoginId')).sendKeys(kEmail);
+			driver.findElement(By.id('txtLoginPass')).sendKeys(kPassword);
+			driver.findElement(By.id('login_do')).click();
 
-		//Close annoying popup
-		driver.findElement(By.className('js-new-release-tour__close-bt')).click();
-		driver.findElement(By.className('js-release-alert__close-bt')).click();
+			//Product edit page
 
-		//Category
-		driver.findElement(By.className('popup_category')).click();
-		var categoryElements = [product.categoryPrimaryBuyma, product.categorySecondaryBuyma];
-		categoryElements.forEach(
-			function(categoryElement)
-			{
-				driver.wait(until.elementLocated(By.css("a[value='"+ categoryElement + "']")), kTimeoutInSeconds * 1000)
-					.then(function(element) {
-					    element.click();
-					});
-			});
+			//Close annoying popup
+			driver.findElement(By.className('js-new-release-tour__close-bt')).click();
+			driver.findElement(By.className('js-release-alert__close-bt')).click();
 
-		//Brand
-		var brand = product.brand;
-		driver.findElement(By.className('popup_brand')).click();
-		driver.wait(until.elementLocated(By.id('brand_suggest_inputTxt')), kTimeoutInSeconds * 1000)
-			.then(function(brandInputContainer) {
-			    var brandInput = brandInputContainer.findElement(By.tagName('input'));
-				brandInput.sendKeys(brand) //brand
-				brandInput.sendKeys(Key.DOWN) //down key
-				brandInput.sendKeys(Key.ENTER) //enter key
-				console.log("Brand finished.")
-			});
+			//Category
+			driver.findElement(By.className('popup_category')).click();
+			var categoryElements = [product.categoryPrimaryBuyma, product.categorySecondaryBuyma];
+			categoryElements.forEach(
+				function(categoryElement)
+				{
+					driver.wait(until.elementLocated(By.css("a[value='"+ categoryElement + "']")), kTimeoutInSeconds * 1000)
+						.then(function(element) {
+						    element.click();
+						});
+				});
 
-		//Name
-		driver.findElement(By.name('itemedit[syo_name]')).sendKeys(product.nameBuyma);
+			//Brand
+			var brand = product.brand;
+			driver.findElement(By.className('popup_brand')).click();
+			driver.wait(until.elementLocated(By.id('brand_suggest_inputTxt')), kTimeoutInSeconds * 1000)
+				.then(function(brandInputContainer) {
+				    var brandInput = brandInputContainer.findElement(By.tagName('input'));
+					brandInput.sendKeys(brand) //brand
+					brandInput.sendKeys(Key.DOWN) //down key
+					brandInput.sendKeys(Key.ENTER) //enter key
+					console.log("Brand finished.")
+				});
+
+			//Name
+			driver.findElement(By.name('itemedit[syo_name]')).sendKeys(product.nameBuyma);
 
 
-		//Add images	
-		var imageUrls = swatch.images;
+			//Add images	
+			var imageUrls = swatch.images;
 
-		var directoryName = path.dirname(require.main.filename);
-		var filePath = directoryName + "/" + kTempFilename;
-		var imageIndex = 1;
+			var directoryName = path.dirname(require.main.filename);
+			var filePath = directoryName + "/" + kTempFilename;
+			var imageIndex = 1;
 
-		var loadImageRecursive = function (imageIndex)
-									{
-										var imageUrl = imageUrls[imageIndex];
-										console.log("	>Downloading image: " + imageUrl);
-										//Download the image
-										request.head(imageUrl, function(err, res, body){
-										    // console.log('content-type:', res.headers['content-type']);
-										    // console.log('content-length:', res.headers['content-length']);			    					    
-										    var r = request(imageUrl).pipe(fs.createWriteStream(filePath));
-										    r.on('close', function()
-												{
-													//Upload to site
-													console.log("	>Finished downloading!");
-													
-													var uploadName = "updfile" + (imageIndex+1);
-													console.log("	>Upload name: " + uploadName);
-													driver.wait(until.elementLocated(By.name(uploadName)), kTimeoutInSeconds * 1000)
-														.then(function(element)
-														{
-															element.sendKeys(filePath).then(
-																	function()
-																	{
-																		console.log("	>Upload finished");
-
-																		//Delete temp.png
-																		fs.unlink(filePath);
-
-																		var nextIndex = imageIndex+1
-																		if (nextIndex<imageUrls.length)
+			var loadImageRecursive = function (imageIndex)
+										{
+											var imageUrl = imageUrls[imageIndex];
+											console.log("	>Downloading image: " + imageUrl);
+											//Download the image
+											request.head(imageUrl, function(err, res, body){
+											    // console.log('content-type:', res.headers['content-type']);
+											    // console.log('content-length:', res.headers['content-length']);			    					    
+											    var r = request(imageUrl).pipe(fs.createWriteStream(filePath));
+											    r.on('close', function()
+													{
+														//Upload to site
+														console.log("	>Finished downloading!");
+														
+														var uploadName = "updfile" + (imageIndex+1);
+														console.log("	>Upload name: " + uploadName);
+														driver.wait(until.elementLocated(By.name(uploadName)), kTimeoutInSeconds * 1000)
+															.then(function(element)
+															{
+																element.sendKeys(filePath).then(
+																		function()
 																		{
-																			loadImageRecursive(nextIndex);	
-																		}					
-																	}
-																);
-														});
-												});
-									  	});
-									}
+																			console.log("	>Upload finished");
 
-		driver.wait(until.elementLocated(By.className("js-async-file-upload")), kTimeoutInSeconds * 1000)
-			.then(function() {
-				loadImageRecursive(0);
-			});
+																			//Delete temp.png
+																			fs.unlink(filePath);
 
-		//Comment
-		driver.findElement(By.id('item_comment')).sendKeys(product.descriptionJP);
+																			var nextIndex = imageIndex+1
+																			if (nextIndex<imageUrls.length)
+																			{
+																				loadImageRecursive(nextIndex);	
+																			}					
+																		}
+																	);
+															});
+													});
+										  	});
+										}
 
-		//Tags
-		driver.wait(until.elementLocated(By.className("popup_tags")), kTimeoutInSeconds * 1000)
-			.then(function(element) {
-				element.click();
-			});
+			driver.wait(until.elementLocated(By.className("js-async-file-upload")), kTimeoutInSeconds * 1000)
+				.then(function() {
+					localdImageRecursive(0);
+				});
 
-		//Pricing
-		driver.findElement(By.name('itemedit[price]')).sendKeys(product.priceBuyma);
+			//Comment
+			driver.findElement(By.id('item_comment')).sendKeys(product.descriptionJP);			
 
-		//Quantity
-		driver.findElement(By.name('itemedit[yukosu]')).sendKeys(product.quantityBuyma);
+			//Pricing
+			driver.findElement(By.name('itemedit[price]')).sendKeys(product.priceBuyma);
 
-		//Shop name
-		driver.findElement(By.name('itemedit[konyuchi]')).sendKeys(product.shopNameBuyma);
+			//Quantity
+			driver.findElement(By.name('itemedit[yukosu]')).sendKeys(product.quantityBuyma);
 
-		//Pause
-		driver.wait(function() {
-		  return driver.findElements(By.id('asdffoo')).then(function(elements) {
-		    return elements[0];
-		  });
-		}, 100000, 'Failed to find element after timeout');
+			//Shop name
+			driver.findElement(By.name('itemedit[konyuchi]')).sendKeys(product.shopNameBuyma);
+
+			//Tags
+			// driver.wait(until.elementLocated(By.className("popup_tags")), kTimeoutInSeconds * 1000)
+			// 	.then(function(element) {
+			// 		element.click();
+			// 	});						
+
+			//Draft button
+			driver.findElement(By.id('draftButton')).click();
+
+			//Confirm button
+			driver.wait(until.elementLocated(By.id("done")), kTimeoutInSeconds * 1000)
+				.then(function(element) {
+					// element.click();
+				});
+
+			//Pause
+			driver.wait(function() {
+			  return driver.findElements(By.id('asdffoo')).then(function(elements) {
+			    return elements[0];
+			  });
+			}, 100000, 'Failed to find element after timeout');
+		}
 	}
 	else
 	{
