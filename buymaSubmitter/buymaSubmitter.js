@@ -129,7 +129,7 @@ query.first().then(function(productFromParse)
 
 			driver.wait(until.elementLocated(By.className("js-async-file-upload")), kTimeoutInSeconds * 1000)
 				.then(function() {
-					localdImageRecursive(0);
+					loadImageRecursive(0);
 				});
 
 			//Comment
