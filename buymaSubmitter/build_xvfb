@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# Compiles a static xvfb for the Heroku platform.
+#
+# This script is a conglomeration of:
+#   * https://github.com/ddollar/heroku-buildpack-apt
+#   * http://stackoverflow.com/questions/14845291/compile-static-linked-binary-of-xvfb
+#   * gumption
+
+set -e # fail fast
+#set -x # debug
+
+alias indent="sed -e 's/^/    /'"
+
+APT_ROOT='temp'
+echo "Building xvfb in ${APT_ROOT}"
+
+BUILD_DIR="$APT_ROOT/build"
+CACHE_DIR="$APT_ROOT/cache"
+mkdir -p $BUILD_DIR $CACHE_DIR
+
+cd $BUILD_DIR
+
+# build-essential: compile tools
+# libdrm2: we'll need to configure xorg-server later
+# libtirpc-dev: provides static versions of some functions which are dynamic only in eglibc
+# cat > $BUILD_DIR/Aptfile <<EOF
+# xvfb
+# build-essential
+# libdrm2
+# libtirpc-dev
+# EOF
+
+echo "Fetching apt buildpack"
+curl -Oq https://raw.githubusercontent.com/ddollar/heroku-buildpack-apt/master/bin/compile
+chmod u+x compile
+
+echo "Running apt buildpack"
+./compile $BUILD_DIR $CACHE_DIR | indent
+
+APT_OPTIONS="-o debug::nolocking=true -o dir::etc::sourcelist=${APT_ROOT}/apt-sources.list -o dir::cache=${APT_ROOT}/cache/apt/cache -o dir::state=${APT_ROOT}/cache/apt/state"
+
+echo "Enabling APT source repos"
+cp /etc/apt/sources.list $APT_ROOT/apt-sources.list
+cat /etc/apt/sources.list | sed 's/^deb /deb-src /' >> $APT_ROOT/apt-sources.list
+apt-get $APT_OPTIONS update | indent
+
+echo "Downloading xorg-server source"
+apt-get $APT_OPTIONS source xorg-server | indent
+
+echo "Configuring xorg-server"
+cd xorg-server-1.15.1
+./configure --enable-static | indent
+
+echo "Building xorg-server"
+make | indent
+
+cd hw/vfb
+
+echo "Cleaning xvfb"
+make clean | indent
+
+# LDFLAGS=-all-static asks libtool to do static linking
+# LD_EXPORT_SYMBOLS_FLAGS= causes --export-dynamic to be omitted
+# LIBS='...' fills in missing dependencies for static libraries
+echo "Recompiling xvfb"
+make LDFLAGS=-all-static LD_EXPORT_SYMBOLS_FLAG= LIBS='-lfreetype -lgpg-error -lfontenc -ltirpc -lz -lbz2 -lm -lrt -lpthread' | indent
+
