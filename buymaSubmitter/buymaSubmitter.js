@@ -135,8 +135,8 @@ query.first().then(function(productFromParse)
 			//Comment
 			driver.findElement(By.id('item_comment')).sendKeys(product.descriptionJP);			
 
-			//Pricing
-			driver.findElement(By.name('itemedit[price]')).sendKeys(product.priceBuyma);
+			//Pricing: CAUSES SERVER TO REJECT THE SAVE =(
+			// driver.findElement(By.name('itemedit[price]')).sendKeys(product.priceBuyma);
 
 			//Quantity
 			driver.findElement(By.name('itemedit[yukosu]')).sendKeys(product.quantityBuyma);

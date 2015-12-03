@@ -21,6 +21,7 @@
     "parse": "^1.6.9",
     "request": "^2.65.0",
     "selenium-webdriver": "^2.48.2",
-    "translate-google-free": "^0.2.0"
+    "translate-google-free": "^0.2.0",
+    "underscore": "^1.8.3"
   }
 }
