@@ -47,9 +47,9 @@ query.first().then(function(productFromParse)
 			driver.findElement(By.id('txtLoginPass')).sendKeys(kPassword);
 			driver.findElement(By.id('login_do')).click();
 
-			//Product edit page
+			// //Product edit page
 
-			//Close annoying popup
+			// //Close annoying popup
 			driver.findElement(By.className('js-new-release-tour__close-bt')).click();
 			driver.findElement(By.className('js-release-alert__close-bt')).click();
 
@@ -61,25 +61,15 @@ query.first().then(function(productFromParse)
 				{
 					driver.wait(until.elementLocated(By.css("a[value='"+ categoryElement + "']")), kTimeoutInSeconds * 1000)
 						.then(function(element) {
+							console.log('	>Category finished!');
 						    element.click();
 						});
-				});
-
-			//Brand
-			var brand = product.brand;
-			driver.findElement(By.className('popup_brand')).click();
-			driver.wait(until.elementLocated(By.id('brand_suggest_inputTxt')), kTimeoutInSeconds * 1000)
-				.then(function(brandInputContainer) {
-				    var brandInput = brandInputContainer.findElement(By.tagName('input'));
-					brandInput.sendKeys(brand) //brand
-					brandInput.sendKeys(Key.DOWN) //down key
-					brandInput.sendKeys(Key.ENTER) //enter key
-					console.log("Brand finished.")
 				});
 
 			//Name
 			driver.findElement(By.name('itemedit[syo_name]')).sendKeys(product.nameBuyma);
 
+			
 
 			//Add images	
 			var imageUrls = swatch.images;
@@ -129,7 +119,126 @@ query.first().then(function(productFromParse)
 
 			driver.wait(until.elementLocated(By.className("js-async-file-upload")), kTimeoutInSeconds * 1000)
 				.then(function() {
-					loadImageRecursive(0);
+					loadImageRecursive(0);					
+				});
+
+			
+			//Determine if multiple sizes or one size
+			driver.wait(until.elementLocated(By.className("js-popup-color-size")), kTimeoutInSeconds * 1000)
+				.then(function(element) {
+					console.log("	>Color+size started!");
+					element.click();
+
+					//Click multisize or free\one size
+					var isFreeSize = false;
+					var sizeSelectId = isFreeSize ? "rdoSelectSize2" : "rdoSelectSize1";
+					driver.findElement(By.id(sizeSelectId)).click();
+					// console.log(util.inspect(swatch))
+					//Click the right color
+					driver.findElements(By.className('item_color'))
+						.then(function(elements){
+							console.log("	>Selecting color: " + swatch.descriptionBuyma);
+					  		var promises = elements.map(
+					  			function(element){
+						    		return element.getAttribute('className').then(function(className){
+						    			// console.log("	>Classname: " + className);
+						    			var classes = className.trim().toLowerCase().split(' ');
+						    			var isMatch = classes.indexOf(swatch.descriptionBuyma) > -1;
+						    			// console.log("	>Color text: " + util.inspect(classes) + ' and isMatch = ' + isMatch);
+						      			return isMatch;
+									});    
+					  			});
+
+					  		Promise.all(promises).then(
+					  			function(isMatchArray)
+					  			{
+					  				// console.log('isMatchArray = ' + util.inspect(isMatchArray));
+					  				var matchingElement = null;
+					  				for (var elementIndex = 0; elementIndex < isMatchArray.length; elementIndex++)
+					  				{
+					  					if (isMatchArray[elementIndex])
+					  					{
+					  						matchingElement = elements[elementIndex];					  						
+					  						matchingElement.click();
+					  						console('	>Clicked color!')
+					  						break;
+					  					}
+					  				}					  										  		
+					  			});
+				  	})
+
+					//Type the color name
+					driver.findElement(By.className('js-color-size-color-name')).sendKeys(swatch.descriptionBuyma);
+
+					//Click the size defaults
+					driver.findElement(By.className('js-size-guide-header')).click()
+					driver.findElements(By.className('js-color-size-set-from-temlpate'))
+						.then(function(elements){
+							console.log("	>Selecting size defaults: " + product.sizeCountryCode);
+					  		var promises = elements.map(
+					  			function(element){
+						    		return element.getText().then(
+						    			function(countryText){						    			
+							      			var isMatch = countryText.trim() == translateToBuymaCountryName(product.sizeCountryCode);
+
+							      			// console.log("	>Country text: " + countryText + ' and isMatch = ' + isMatch);
+
+							      			return isMatch;
+										});    						    		
+					  			});
+
+					  		Promise.all(promises).then(
+					  			function(isMatchArray)
+					  			{
+					  				// console.log('isMatchArray = ' + util.inspect(isMatchArray));
+					  				var matchingElement = null;
+					  				for (var elementIndex = 0; elementIndex < isMatchArray.length; elementIndex++)
+					  				{
+					  					if (isMatchArray[elementIndex])
+					  					{
+					  						matchingElement = elements[elementIndex];					  						
+					  						matchingElement.click();
+					  						console('	>Clicked default size!')
+					  						break;
+					  					}
+					  				}					  										  		
+					  			});
+				  	})					
+				});
+					
+			// driver.findElement(By.className('js-popup-color-size')).click();
+			// //For the swatch, click the right color square based on class
+			// driver.findElements(By.className('item_color'))
+			// 	.then(function(elements){
+			// 		console.log("HERE");
+			//   		return elements.filter(
+			//   			function(element){
+			// 	    		return element.getAttribute('className').then(function(className){
+			// 	    			console.log("Classname: " + className);
+			// 	      			return className.trim().toLowerCase() == swatch.buymaColor;
+			// 				});    
+			//   			});
+		 //  	})
+				//Get all spans with class = item_color
+				//Get span with the right color class, e.g. blue
+
+			//Click\Hover over the size guide at class = js-size-guide-header
+				//and click 'America' (or whatever the swatch.sizeCountryCode says): HOW?
+			//Get checkboxes with class js-colorsize-checkbox
+				//Deselect checkbox based on size, colorsize_2_1, colorsize_2_2, etc. How to determine which checkbox from size?
+
+			//Click commit button with class = js-commit-changes
+
+			// Brand
+			var brand = product.brand;
+			driver.findElement(By.className('popup_brand')).click();
+			driver.wait(until.elementLocated(By.id('brand_suggest_inputTxt')), kTimeoutInSeconds * 1000)
+				.then(function(brandInputContainer) {
+				    var brandInput = brandInputContainer.findElement(By.tagName('input'));
+					brandInput.sendKeys(brand) //brand
+					brandInput.sendKeys(Key.DOWN) //down key
+					brandInput.sendKeys(Key.ENTER) //enter key
+					console.log("	>Brand finished.");
 				});
 
 			//Comment
@@ -151,13 +260,13 @@ query.first().then(function(productFromParse)
 			// 	});						
 
 			//Draft button
-			driver.findElement(By.id('draftButton')).click();
+			// driver.findElement(By.id('draftButton')).click();
 
-			//Confirm button
-			driver.wait(until.elementLocated(By.id("done")), kTimeoutInSeconds * 1000)
-				.then(function(element) {
-					// element.click();
-				});
+			// //Confirm button
+			// driver.wait(until.elementLocated(By.id("done")), kTimeoutInSeconds * 1000)
+			// 	.then(function(element) {
+			// 		// element.click();
+			// 	});
 
 			//Pause
 			driver.wait(function() {
@@ -172,3 +281,30 @@ query.first().then(function(productFromParse)
 		console.log("	>Could not find product");
 	}
 });
+
+function translateToBuymaCountryName(countryCode)
+{
+	switch (countryCode)
+	{
+		case 'US':
+			return "アメリカ";
+		case 'IT':
+			return "イタリア";
+		case 'JP':
+			return "日本";
+		case 'FR':
+			return "フランス";
+		case 'EN':
+			return "イギリス";
+		default:
+			return "その他ヨーロッパ";
+	}
+}
+
+function getBuymaSizeName(sizeAsInt, countryCode)
+{
+	if (countryCode == 'US')
+	{
+		return countryCode + sizeAsInt;
+	}
+}
