@@ -18,6 +18,9 @@ var kPassword = 'canada2015!'
 var kProductEditUrl = "http://www.buyma.com/my/itemedit/";//http://shop.lululemon.com/products/clothes-accessories/relaxed-sensation/Jet-Crop-Slim-Luxtreme?c_4";
 var kTimeoutInMilliseconds = 10000;
 
+kSalesTaxPercentage = 13;
+kMarkupPercentage = 20;
+
 //Selenium
 var webdriverio = require('webdriverio');
 var options = {
@@ -140,29 +143,34 @@ function processSwatchRecursive(product, swatchIndex)
 					var description = product.descriptionJP != null ? product.descriptionJP : '';
 					var quantity = product.quantityBuyma != null ? product.quantityBuyma : 1;
 					var shopName = product.shopNameBuyma != null ? product.shopNameBuyma : '';
-					var price = product.price != null ? getAdjustedPrice(product) : '';
-					return client.setValue('#item_comment', description)	//Comment
-					.setValue('[name=\'itemedit[yukosu]\']', quantity)	//Quantity
-					.setValue('[name=\'itemedit[konyuchi]\']', shopName)	//Shop name
-					.setValue('[name=\'itemedit[price]\']', price)	//Price, must be high enough. Too low will cause rejection
-					.click('#draftButton')
-					.click('#done')
-					.catch(
-							function(err)
-							{									
-								console.error('	>Misc could not be loaded!');
-								return Promise.resolve();
-							})
 
-					//Season
-					//Tag .popup_tags
-					//Theme
-					//Shipping
-					//通常出品価格/参考価格
-					//購入者の支払方法
-					//購入期限(日本時間)
-					//買付地
-					//発送地
+					return getAdjustedPrice(product).then(
+							function(price)
+							{
+								return client.setValue('#item_comment', description)	//Comment
+									.setValue('[name=\'itemedit[yukosu]\']', quantity)	//Quantity
+									.setValue('[name=\'itemedit[konyuchi]\']', shopName)	//Shop name
+									.setValue('[name=\'itemedit[price]\']', price)	//Price, must be high enough. Too low will cause rejection
+									.click('#draftButton')
+									.click('#done')
+									.catch(
+											function(err)
+											{									
+												console.error('	>Misc could not be loaded!');
+												return Promise.resolve();
+											})
+
+									//Season
+									//Tag .popup_tags
+									//Theme
+									//Shipping
+									//通常出品価格/参考価格
+									//購入者の支払方法
+									//購入期限(日本時間)
+									//買付地
+									//発送地
+							}
+						)															
 				}
 			).then(
 				function()
@@ -431,28 +439,39 @@ function getShippingCost(product)
 
 function getAdjustedPrice(product)
 {
-	// console.log('	>getAdjustedPrice: price (original)=' + product.price);
-	var salesTax = 1.13;
-	var shippingCost = getShippingCost(product);
-	var markup = 1.40;
-	// console.log('	>getAdjustedPrice: getShippingCost=' + shippingCost);
-	var adjustedPrice = (product.price * salesTax) * markup + shippingCost;
-	// console.log('	>getAdjustedPrice: adjustedPrice=' + adjustedPrice);
+	return new Promise(
+		function(resolve, reject)
+		{
+			if (product.price == null)
+			{
+				resolve(0);
+			}
+			else
+			{
+				// console.log('	>getAdjustedPrice: price (original)=' + product.price);
+				var salesTax = kSalesTaxPercentage / 100 + 1;
+				var shippingCost = getShippingCost(product);
+				var markup = kMarkupPercentage / 100 + 1;
+				// console.log('	>getAdjustedPrice: getShippingCost=' + shippingCost);
+				var adjustedPrice = (product.price * salesTax) * markup + shippingCost;
+				// console.log('	>getAdjustedPrice: adjustedPrice=' + adjustedPrice);
 
-	//Convert to Japanese yen
-	oxr.latest(function() {
-		// Apply exchange rates and base rate to `fx` library object:
-		fx.rates = oxr.rates;
-		fx.base = oxr.base;
+				//Convert to Japanese yen
+				oxr.latest(function() {
+					// Apply exchange rates and base rate to `fx` library object:
+					fx.rates = oxr.rates;
+					fx.base = oxr.base;
 
-		// console.log('	>getAdjustedPrice: price (adjusted)=' + adjustedPrice);
-		var priceInJPY = fx(adjustedPrice).from("CAD").to("JPY");
-		// console.log('	>getAdjustedPrice: price (adjusted in JPY)=' + priceInJPY);
-		//Round up to nearest 900
-		priceInJPY = Math.round(priceInJPY/1000)*1000 - 100;
-		console.log('	>getAdjustedPrice: price (rounded in JPY)=' + priceInJPY);
-		return priceInJPY;
-	});
+					// console.log('	>getAdjustedPrice: price (adjusted)=' + adjustedPrice);
+					var priceInJPY = fx(adjustedPrice).from("CAD").to("JPY");
+					// console.log('	>getAdjustedPrice: price (adjusted in JPY)=' + priceInJPY);
+					//Round up to nearest 900
+					priceInJPY = Math.round(priceInJPY/1000)*1000 - 100;
+					console.log('	>getAdjustedPrice: price (rounded in JPY)=' + priceInJPY);
+					resolve(priceInJPY);
+				});
+			}
+		});
 }
 
 function getStylizedName(product, swatch)
