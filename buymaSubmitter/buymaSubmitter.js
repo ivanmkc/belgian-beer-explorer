@@ -16,7 +16,7 @@ var kEmail = 'ivyangel2015@gmail.com';
 var kPassword = 'canada2015!'
 
 var kProductEditUrl = "http://www.buyma.com/my/itemedit/";//http://shop.lululemon.com/products/clothes-accessories/relaxed-sensation/Jet-Crop-Slim-Luxtreme?c_4";
-var kTimeoutInMilliseconds = 10000;
+var kTimeoutInMilliseconds = 30000;
 
 kSalesTaxPercentage = 13;
 kMarkupPercentage = 20;
@@ -31,7 +31,7 @@ var options = {
 
 //Product
 var kTempFilename = 'temp.png';
-var objectId = "jkuBiAlXGd";
+var objectId = "8W1aTPbxgB";
 
 //Get the page
 console.log("1. Logging in");
